@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Investimentos e Crédito | FVS Consórcios</title>
+    <meta name="description" content="Simule seu crédito imobiliário, veicular ou de serviços. Planejamento financeiro inteligente com a FVS.">
+    <link rel="icon" type="image/png" href="imagens/logo sem fundo FVS.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- Header / Nav -->
+    <header class="navbar">
+        <div class="container">
+            <a href="index.html" class="logo animate-on-scroll">
+                <img src="imagens/sloganfvs remaster.png" alt="FVS Consórcios">
+            </a>
+            
+            <nav class="nav-menu">
+                <ul>
+                    <li><a href="index.html">Início</a></li>
+                    <li><a href="index.html#nossa-historia">Quem Somos</a></li>
+                    <li><a href="index.html#servicos">Nossos Serviços</a></li>
+                    <li><a href="simulacao.html" class="cta-button">Simular Consórcio</a></li>
+                </ul>
+            </nav>
+
+            <a href="https://wa.me/5561996667218" class="btn-outline animate-on-scroll desktop-btn">Fale Conosco</a>
+            
+            <div class="mobile-menu-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- Simulation Section -->
+    <section class="simulation-page">
+        <div class="container">
+            <div class="simulation-container animate-on-scroll">
+                <div class="simulation-header">
+                    <h1>Planejamento Financeiro Inteligente</h1>
+                    <p>Calcule o poder de compra da sua carta de crédito e visualize o fluxo de pagamento otimizado.</p>
+                </div>
+
+                <form id="simulation-form" class="simulation-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="client-name">Nome Completo</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-user"></i>
+                                <input type="text" id="client-name" placeholder="Seu nome completo" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="client-phone">Celular (WhatsApp)</label>
+                            <div class="input-wrapper">
+                                <i class="fab fa-whatsapp"></i>
+                                <input type="tel" id="client-phone" placeholder="(DDD) 99999-9999" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="client-email">Email</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-envelope"></i>
+                                <input type="email" id="client-email" placeholder="seu@email.com" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="client-cep">CEP</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <input type="text" id="client-cep" placeholder="00000-000" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-divider"></div>
+
+                    <div class="form-group">
+                        <label for="type">Qual o seu objetivo?</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-bullseye"></i>
+                            <select id="type" onchange="updateSimulationOptions()">
+                                <option value="" disabled selected>Selecione uma opção...</option>
+                                <option value="Imóvel">Imóvel (Aquisição, Construção ou Investimento)</option>
+                                <option value="Veículo">Automóvel (Renovação de Frota ou Uso Pessoal)</option>
+                                <option value="Motocicleta">Motocicleta</option>
+                                <option value="Pesados">Veículos Pesados (Caminhões, Máquinas)</option>
+                                <option value="Serviços">Serviços (Reformas, Cirurgias, Projetos)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="value-slider">Valor do Crédito</label>
+                        <div class="range-wrapper">
+                            <input type="range" id="value-slider" min="50000" max="1500000" step="10000" value="50000" oninput="syncValueInput(this.value)">
+                            <div class="value-display-wrapper">
+                                <span class="currency-prefix">R$</span>
+                                <input type="text" id="value-text" class="value-text-input" value="50.000,00" onchange="syncSliderInput(this.value)">
+                            </div>
+                            <div class="range-value-display" id="value-output" style="display:none;">R$ 50.000,00</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="installments">Prazo Desejado</label>
+                        <div class="input-wrapper">
+                            <i class="far fa-calendar-alt"></i>
+                            <select id="installments" onchange="calculateSimulation()">
+                                <option value="">Selecione o valor primeiro</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+
+                <div id="simulation-result" class="simulation-result" style="display: none;">
+                    <h3>Resultado da Simulação</h3>
+                    <div class="result-card">
+                        <p>Valor do Crédito: <strong id="result-credit">R$ 0,00</strong></p>
+                        <p>Prazo: <strong id="result-term">0 meses</strong></p>
+                        <p>Parcela Estimada: <strong id="monthly-payment">R$ 0,00</strong></p>
+                        <p class="result-note">*Valores aproximados sujeitos a alteração.</p>
+                    </div>
+                    <button type="button" class="btn-primary" onclick="sendSimulation()">
+                        <i class="fab fa-whatsapp"></i> Solicitar Análise Completa
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col animate-on-scroll">
+                    <h3>FVS Consórcios</h3>
+                    <p>Mais de 10 anos de experiência viabilizando grandes projetos e construção de patrimônio através de consórcios seguros e planejados.</p>
+                    <div class="social-links">
+                        <a href="https://instagram.com/fvsconsorcios" target="_blank"><i class="fab fa-instagram"></i></a>
+                        <a href="https://wa.me/5561996667218" target="_blank"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-col animate-on-scroll">
+                    <h3>Links Rápidos</h3>
+                    <ul class="footer-links">
+                        <li><a href="index.html">Início</a></li>
+                        <li><a href="index.html#nossa-historia">Sobre Nós</a></li>
+                        <li><a href="index.html#servicos">Nossos Serviços</a></li>
+                        <li><a href="index.html#faq">Dúvidas Frequentes</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-col animate-on-scroll">
+                    <h3>Contato</h3>
+                    <ul class="footer-links contact-info">
+                        <li>
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Águas Claras - DF<br>Brasília, Brasil</span>
+                        </li>
+                        <li>
+                            <i class="fab fa-whatsapp"></i>
+                            <span>(61) 99666-7218</span>
+                        </li>
+                        <li>
+                            <i class="far fa-envelope"></i>
+                            <span>fvs.consorcios@gmail.com</span>
+                        </li>
+                    </ul>
+                    
+                    <div class="opening-hours">
+                        <h3>Horário de Funcionamento</h3>
+                        <ul>
+                            <li><span>Seg - Sex:</span> 09:00 - 18:00</li>
+                            <li><span>Sáb - Dom:</span> Fechado</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-copyright">
+                <p>&copy; <span id="current-year">2024</span> FVS Consórcios e Consultoria. Todos os direitos reservados. <span style="margin: 0 10px; opacity: 0.5;">|</span> CNPJ: 50.603.740/0001-90</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Floating WhatsApp Button -->
+    <a href="https://wa.me/5561996667218" class="floating-whatsapp animate-on-scroll" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <script src="script.js"></script>
+</body>
+</html>
