@@ -122,13 +122,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Back to Top Button
     const backToTopBtn = document.querySelector('.back-to-top');
     
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > 300) {
-            backToTopBtn.classList.add('visible');
-        } else {
-            backToTopBtn.classList.remove('visible');
-        }
-    });
+    if (backToTopBtn) {
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTopBtn.classList.add('visible');
+            } else {
+                backToTopBtn.classList.remove('visible');
+            }
+        });
+    }
 
     if (backToTopBtn) {
         backToTopBtn.addEventListener('click', (e) => {

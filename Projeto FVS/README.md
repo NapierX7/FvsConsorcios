@@ -1,60 +1,117 @@
-# Atualizações do Site - Sessão de 27/02/2026
+# Projeto FVS (Site + Simulação)
 
-Este documento resume as principais alterações e melhorias realizadas no site da FVS Consórcios durante a sessão de hoje, comparando com a versão anterior ("ANTIGO FVS").
+Site institucional estático (HTML/CSS/JS) com página de simulação, CTAs para WhatsApp, modal de vídeos e integração opcional com Kommo via Netlify Function. Também inclui tracking de cliques/interesses via `dataLayer` (GTM/Google) e compatibilidade com `gtag`/`fbq` quando existirem no site.
 
-## 1. Melhorias Visuais e de Conteúdo
+## Páginas
 
-### Slogan e Cabeçalho
-- **Novo Slogan:** A logo antiga (`logo sem fundo FVS.png`) no topo foi substituída pelo novo "Slogan FVS Remaster" (`sloganfvs remaster.png`) em tamanho ampliado.
-- **Posicionamento:** O slogan agora "transborda" levemente o header para dar um efeito visual mais dinâmico e moderno.
-    - *Antes:* A logo ficava contida dentro do header de tamanho padrão.
-    - *Agora:* A logo flutua sobre o header (`top: -30px` no desktop, `top: -22px` no mobile) e tem altura de `160px` (desktop) e `120px` (mobile).
-- **Ajuste de Altura:** A altura do header foi fixada em `100px` (desktop) e `80px` (mobile) para garantir consistência.
-- **Espaçamento:** A margem superior da seção "Hero" (topo com a foto principal) foi ajustada para eliminar o espaço em branco indesejado entre o header e a imagem, alinhando-se perfeitamente com a altura fixa do menu.
+- `index.html`: landing page com seções, vídeos e CTAs.
+- `simulacao.html`: formulário de simulação (objetivo, valor e prazo) + envio via WhatsApp e registro no Kommo.
 
-### Nova Seção "Central de Conhecimento"
-- **Vídeos Explicativos:** Criada uma nova seção dedicada (`.knowledge-center`) para agrupar os vídeos informativos sobre consórcio.
-- **Layout em Grade:** Os vídeos agora são apresentados em cards organizados, com títulos claros e descrições curtas.
-- **Thumbnails Corrigidas:**
-    - Substituídas as imagens quebradas por thumbnails existentes e relevantes (`thumb lance fixo.jpg`, `thumb consultoria consorcio.jpg`).
-    - Adicionado suporte a "Lazy Loading" para melhorar a performance de carregamento das imagens.
-- **Links de Vídeos Ajustados:**
-    - Vídeo "Lances Embutidos" vinculado a `lance fixo.mp4`.
-    - Vídeo "Reformar e Construir" vinculado a `consultoria consorcio.mp4`.
+## Estrutura do projeto
 
-### Remoção de Elementos Antigos
-- **Pop-up Teaser:** O vídeo de "Incentivo" que aparecia como pop-up intrusivo na versão antiga foi removido. O conteúdo foi reaproveitado na nova seção de vídeos.
-- **Botões de Vídeo nos Benefícios:** Removidos os botões de "Ver vídeo" que ficavam dentro dos cards de benefícios, centralizando a experiência de vídeo na nova seção dedicada.
+```
+Projeto FVS/
+  index.html
+  simulacao.html
+  style.css
+  script.js
+  netlify/
+    functions/
+      kommo-lead.js
+  imagens/
+```
 
-## 2. Ajustes Técnicos e de Usabilidade
+## Executar localmente
 
-### Botão de Play e Animações
-- **Alinhamento do Overlay:** Corrigida a animação de pulso do botão de play, que agora utiliza a cor dourada (identidade da marca) em vez do verde padrão do WhatsApp.
-- **Centralização Visual:** Ajustado o `padding-left` do ícone de play para `6px` para corrigir a ilusão de ótica que o deixava descentralizado.
-- **Animação Personalizada:** Criada a animação `@keyframes pulse-gold` para garantir que o efeito visual esteja alinhado com o design do site.
+Este projeto não depende de build. Para revisar layout/conteúdo, dá para abrir os arquivos `.html` no navegador.
 
-### Navegação e Links
-- **Links Externos:** Links para WhatsApp e mapas agora abrem em nova aba (`target="_blank"`) para não tirar o usuário do site.
-- **Rolagem Suave:** Implementado `scroll-behavior: smooth` no CSS global para que a navegação pelos menus ("Quem Somos", "Serviços") deslize suavemente pela página.
+Para testar a integração com Kommo (`/.netlify/functions/kommo-lead`), é necessário rodar via Netlify (deploy) ou ambiente que suporte Functions.
 
-### Mobile
-- **Legibilidade:** A cor do texto do botão "Fale Conosco" no menu mobile foi alterada para branco, corrigindo o problema de "tom sobre tom" que existia na versão anterior.
-- **Botão Sólido:** O botão mobile agora tem fundo preenchido com a cor secundária (dourado) para maior destaque.
+## Deploy na Netlify
 
-## 3. Performance
-- **Carregamento Otimizado:** Imagens secundárias agora carregam sob demanda (lazy loading), acelerando a abertura inicial do site.
-- **Preload:** A imagem principal do topo (`fotofabianaprincipal.jpg`) foi configurada no `<head>` com `<link rel="preload">` para carregar com prioridade máxima, evitando "piscar" ao abrir a página.
+O site pode ser publicado como estático. Para publicar a Function junto:
 
----
+- Publish directory: `.`
+- Functions directory: `netlify/functions`
 
-**Resumo da Comparação (Antes vs. Depois):**
+Após o deploy, a Function fica disponível em:
 
-| Recurso | Versão Antiga (ANTIGO FVS) | Versão Atual (Projeto FVS) |
-| :--- | :--- | :--- |
-| **Logo no Topo** | Pequena, contida no header | "Slogan Remaster" grande, transbordando o header |
-| **Vídeos** | Botões espalhados | Seção "Central de Conhecimento" dedicada e organizada |
-| **Header** | Altura variável | Altura fixa (100px desktop / 80px mobile) |
-| **Botão Play** | Verde (padrão WhatsApp) | Dourado (Identidade Visual) e centralizado |
-| **Navegação** | Pulo seco para as seções | Rolagem suave (Smooth Scroll) |
-| **Mobile CTA** | Texto difícil de ler (tom sobre tom) | Botão sólido dourado com texto branco |
-| **Performance** | Carregamento padrão | Lazy Loading + Preload de imagem crítica |
+`https://<seu-site>.netlify.app/.netlify/functions/kommo-lead`
+
+## Integração Kommo (Netlify Function)
+
+### O que ela faz
+
+Quando o usuário clica em “Solicitar Análise Completa” na simulação, o front-end:
+
+- abre o WhatsApp com a mensagem já preenchida
+- tenta criar um Lead no Kommo via Function
+
+Front-end: [sendSimulation](file:///c:/Users/napie/Downloads/Projeto%20Ebook/Projeto%20FVS/script.js#L866-L929)  
+Function: [kommo-lead.js](file:///c:/Users/napie/Downloads/Projeto%20Ebook/Projeto%20FVS/netlify/functions/kommo-lead.js)
+
+### Variáveis de ambiente (Netlify)
+
+Obrigatórias:
+
+- `KOMMO_SUBDOMAIN`: subdomínio do Kommo (ex: `minhaempresa`)
+- `KOMMO_LONG_LIVED_TOKEN`: token Bearer (long-lived)
+
+Opcionais:
+
+- `KOMMO_PIPELINE_ID`: número
+- `KOMMO_STATUS_ID`: número
+
+### Respostas típicas
+
+- `200` `{ ok: true, lead_id: <id> }` quando cria o lead
+- `422` `{ ok: false, error: "missing_required_fields" }` quando faltam campos obrigatórios
+- `503` `{ ok: false, error: "kommo_not_configured" }` quando as variáveis de ambiente não estão configuradas
+- `502` `{ ok: false, error: "kommo_api_error", status, body }` quando a API do Kommo rejeita a requisição
+
+### Arquivo legado (não usado na Netlify)
+
+Existe um `kommo-lead.php` na raiz do projeto, mas a publicação na Netlify deve usar a Function em `netlify/functions/kommo-lead.js`.
+
+## Tracking de Marketing (Meta + Google)
+
+O site emite eventos para o `dataLayer` e também dispara `gtag`/`fbq` se existirem na página. Não são enviados dados pessoais para tracking, apenas comportamento e intenção.
+
+Implementação: [trackMarketingEvent](file:///c:/Users/napie/Downloads/Projeto%20Ebook/Projeto%20FVS/script.js#L1-L23)
+
+### Eventos emitidos
+
+- `lead_whatsapp_click`: clique em qualquer link/botão do WhatsApp  
+  Parâmetros: `label`, `placement`, `page_path`
+- `simulation_start`: clique para abrir `simulacao.html`  
+  Parâmetros: `label`, `placement`, `page_path`
+- `simulation_view`: visualização da página de simulação  
+  Parâmetros: `page_path`
+- `simulation_interest_select`: seleção de objetivo/interesse  
+  Parâmetros: `interest` (`imovel|veiculo|motocicleta|pesados|servicos`)
+- `simulation_calculated`: simulação calculada (interesse + prazo selecionado)  
+  Parâmetros: `interest`, `term_months`, `page_path`
+- `simulation_submit`: clique em “Solicitar Análise Completa”  
+  Parâmetros: `interest`, `credit_value` (número), `term_months`, `page_path`
+- `video_open`: abertura de vídeo no modal  
+  Parâmetros: `video`, `page_path`
+- `partner_click`: clique em parceiros (ex: Embracon / Google Maps)  
+  Parâmetros: `partner`, `label`, `placement`, `page_path`
+
+`placement` identifica a área do site onde ocorreu o clique (ex: `header`, `hero`, `footer`, `floating`, `simulation`, `page`).
+
+### Como validar rapidamente
+
+1. Abra o site no navegador
+2. Clique em alguns botões/CTAs
+3. No Console do DevTools, execute:
+
+```js
+window.dataLayer.slice(-10)
+```
+
+## Troubleshooting (Netlify)
+
+- Function retorna `404`: verifique se o “Functions directory” está configurado como `netlify/functions`.
+- Function retorna `503`: configure `KOMMO_SUBDOMAIN` e `KOMMO_LONG_LIVED_TOKEN` nas variáveis do site.
+- Não aparece requisição na simulação: no DevTools, filtre por `Fetch/XHR` e procure `/.netlify/functions/kommo-lead`.
