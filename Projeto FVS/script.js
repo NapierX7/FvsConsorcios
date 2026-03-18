@@ -1,3 +1,94 @@
+function trackMarketingEvent(eventName, params = {}) {
+    try {
+        const safeParams = params && typeof params === 'object' ? params : {};
+        const pagePath = typeof window !== 'undefined' && window.location ? window.location.pathname : '';
+
+        const payload = {
+            event: eventName,
+            page_path: pagePath,
+            ...safeParams
+        };
+
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push(payload);
+
+        if (typeof window.gtag === 'function') {
+            window.gtag('event', eventName, payload);
+        }
+
+        if (typeof window.fbq === 'function') {
+            window.fbq('trackCustom', eventName, payload);
+        }
+    } catch {}
+}
+
+function normalizeInterest(value) {
+    const v = String(value || '').trim().toLowerCase();
+    if (!v) return '';
+    if (v.includes('imó') || v.includes('imov')) return 'imovel';
+    if (v.includes('veí') || v.includes('veic') || v.includes('auto') || v.includes('carro') || v.includes('frota')) return 'veiculo';
+    if (v.includes('moto')) return 'motocicleta';
+    if (v.includes('pesad') || v.includes('caminh') || v.includes('máquin') || v.includes('maquin')) return 'pesados';
+    if (v.includes('serv')) return 'servicos';
+    return v.replace(/\s+/g, '_');
+}
+
+function getClickableLabel(el) {
+    if (!el) return '';
+    const explicit = el.getAttribute && (el.getAttribute('aria-label') || el.getAttribute('data-track-label'));
+    const text = explicit || (el.textContent || '');
+    return String(text).trim().toLowerCase().replace(/\s+/g, '_').slice(0, 64);
+}
+
+function initClickTracking() {
+    if (typeof window === 'undefined') return;
+    if (window.__fvsClickTrackingInitialized) return;
+    window.__fvsClickTrackingInitialized = true;
+
+    const getPlacement = (el) => {
+        try {
+            if (el && el.classList && el.classList.contains('floating-whatsapp')) return 'floating';
+            if (el && el.closest && el.closest('.navbar')) return 'header';
+            if (el && el.closest && el.closest('.hero')) return 'hero';
+            if (el && el.closest && el.closest('.simulation-page')) return 'simulation';
+            if (el && el.closest && el.closest('footer')) return 'footer';
+        } catch {}
+        return 'page';
+    };
+
+    const onClick = (e) => {
+        const clickable = e.target && e.target.closest ? e.target.closest('a,button') : null;
+        if (!clickable) return;
+
+        const tag = clickable.tagName ? clickable.tagName.toLowerCase() : '';
+        const href = tag === 'a' ? (clickable.getAttribute('href') || '') : '';
+        const label = getClickableLabel(clickable);
+        const placement = getPlacement(clickable);
+
+        if (href && /wa\.me\//i.test(href)) {
+            trackMarketingEvent('lead_whatsapp_click', { label, placement });
+            return;
+        }
+
+        if (href && /simulacao\.html/i.test(href)) {
+            trackMarketingEvent('simulation_start', { label: label || 'simulacao', placement });
+            return;
+        }
+
+        if (href && /embracon\.com\.br/i.test(href)) {
+            trackMarketingEvent('partner_click', { partner: 'embracon', label: label || 'embracon', placement });
+            return;
+        }
+
+        if (href && /(share\.google|google\.com\/maps)/i.test(href)) {
+            trackMarketingEvent('partner_click', { partner: 'google_maps', label: label || 'maps', placement });
+            return;
+        }
+    };
+
+    document.addEventListener('click', onClick, true);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     // Select elements to animate
     const elementsToAnimate = document.querySelectorAll('.animate-on-scroll');
@@ -65,6 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const posterSrc = trigger.getAttribute('data-poster');
                 
                 if (videoSrc) {
+                    trackMarketingEvent('video_open', { video: String(videoSrc).split('/').pop() || String(videoSrc) });
                     modalVideo.querySelector('source').src = videoSrc;
                     if (posterSrc) {
                         modalVideo.poster = posterSrc;
@@ -154,8 +246,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize simulation if on simulation page
     if (document.getElementById('simulation-form')) {
+        trackMarketingEvent('simulation_view', {});
         updateSimulationOptions();
     }
+
+    initClickTracking();
 
     // Testimonials Slider Logic
     const slider = document.querySelector('.testimonials-slider');
@@ -622,6 +717,14 @@ function updateSimulationOptions() {
     termSelect.innerHTML = '';
 
     if (selectedType && consorcioTypes[selectedType]) {
+        if (typeof window !== 'undefined') {
+            const normalized = normalizeInterest(selectedType);
+            if (normalized && window.__fvsLastSimulationInterest !== normalized) {
+                window.__fvsLastSimulationInterest = normalized;
+                trackMarketingEvent('simulation_interest_select', { interest: normalized });
+            }
+        }
+
         const config = consorcioTypes[selectedType];
         
         // Update slider constraints
@@ -659,6 +762,15 @@ function calculateSimulation() {
     const resultTerm = document.getElementById('result-term');
 
     if (type && value && months) {
+        if (typeof window !== 'undefined') {
+            const normalized = normalizeInterest(type);
+            const signature = `${normalized}:${months}`;
+            if (normalized && window.__fvsLastSimulationCalculated !== signature) {
+                window.__fvsLastSimulationCalculated = signature;
+                trackMarketingEvent('simulation_calculated', { interest: normalized, term_months: months });
+            }
+        }
+
         const config = consorcioTypes[type];
         const formatter = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         
@@ -816,6 +928,12 @@ function sendSimulation() {
                     `*Parcela Estimada:* ${installmentValue}%0A` +
                     `--------------------------------%0A` +
                     `*Gostaria de uma análise de crédito detalhada.*`;
+
+    trackMarketingEvent('simulation_submit', {
+        interest: normalizeInterest(type),
+        credit_value: Number(value),
+        term_months: Number(months)
+    });
 
     createKommoLeadFromSimulation({
         source: 'site_simulacao',
