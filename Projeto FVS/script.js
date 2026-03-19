@@ -3,21 +3,26 @@ function trackMarketingEvent(eventName, params = {}) {
         const safeParams = params && typeof params === 'object' ? params : {};
         const pagePath = typeof window !== 'undefined' && window.location ? window.location.pathname : '';
 
-        const payload = {
+        const dataLayerPayload = {
             event: eventName,
             page_path: pagePath,
             ...safeParams
         };
 
         window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push(payload);
+        window.dataLayer.push(dataLayerPayload);
+
+        const vendorPayload = {
+            page_path: pagePath,
+            ...safeParams
+        };
 
         if (typeof window.gtag === 'function') {
-            window.gtag('event', eventName, payload);
+            window.gtag('event', eventName, vendorPayload);
         }
 
         if (typeof window.fbq === 'function') {
-            window.fbq('trackCustom', eventName, payload);
+            window.fbq('trackCustom', eventName, vendorPayload);
         }
     } catch {}
 }
@@ -65,12 +70,12 @@ function initClickTracking() {
         const label = getClickableLabel(clickable);
         const placement = getPlacement(clickable);
 
-        if (href && /wa\.me\//i.test(href)) {
+        if (href && /(wa\.me\/|api\.whatsapp\.com\/send|web\.whatsapp\.com\/send)/i.test(href)) {
             trackMarketingEvent('lead_whatsapp_click', { label, placement });
             return;
         }
 
-        if (href && /simulacao\.html/i.test(href)) {
+        if (href && /(^|\/)simulacao(\.html)?(\?|#|$)/i.test(href)) {
             trackMarketingEvent('simulation_start', { label: label || 'simulacao', placement });
             return;
         }
@@ -879,17 +884,17 @@ async function createKommoLeadFromSimulation(payload) {
         });
 
         if (!response.ok) {
-            return { ok: false };
+            return { ok: false, status: response.status };
         }
 
         const json = await response.json().catch(() => null);
         if (!json || json.ok !== true) {
-            return { ok: false };
+            return { ok: false, status: response.status };
         }
 
         return { ok: true, leadId: json.lead_id };
     } catch {
-        return { ok: false };
+        return { ok: false, status: 0 };
     }
 }
 
@@ -950,7 +955,10 @@ function sendSimulation() {
         page_url: typeof window !== 'undefined' ? window.location.href : ''
     }).then((result) => {
         if (result.ok) {
+            trackMarketingEvent('kommo_lead_created', { lead_id: result.leadId });
             showToast('Recebemos sua simulação. Em instantes entraremos em contato.', 'success');
+        } else {
+            trackMarketingEvent('kommo_lead_failed', { status: Number(result.status || 0) });
         }
     });
     
@@ -1015,13 +1023,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Inicializa opções se estiver na página de simulação
-    if (document.getElementById('simulation-form')) {
-        updateSimulationOptions();
-        
-        // Inicializa o valor do input de texto com o valor inicial do slider
-        const slider = document.getElementById('value-slider');
-        if (slider) {
-            syncValueInput(slider.value);
-        }
-    }
 });
