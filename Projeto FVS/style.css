@@ -52,7 +52,7 @@ a {
     top: 0;
     z-index: 1000;
     border-bottom: 4px solid var(--secondary-color);
-    height: 90px; /* Reduced height slightly */
+    min-height: 120px;
     transition: all 0.3s ease;
 }
 
@@ -61,7 +61,6 @@ a {
     justify-content: space-between;
     align-items: center;
     padding: 0;
-    height: 100%;
     position: relative;
 }
 
@@ -72,18 +71,17 @@ a {
     letter-spacing: 1px;
     display: flex;
     align-items: center;
-    height: 100%;
     position: relative;
-    width: 200px; /* Adjusted width */
+    width: auto;
 }
 
 .logo img {
-    height: 140px; /* Slightly reduced desktop logo */
+    height: 120px;
+    width: auto;
+    max-width: 320px;
+    display: block;
     object-fit: contain;
     transition: all 0.3s ease;
-    position: absolute;
-    top: -25px;
-    left: 0;
 }
 
 .logo:hover img {
@@ -272,7 +270,7 @@ a {
     text-align: center;
     position: relative;
     color: var(--white);
-    margin-top: 90px; /* Matched to header height exactly */
+    margin-top: 120px;
 }
 
 .hero-overlay {
@@ -1506,9 +1504,10 @@ input[type=range]::-moz-range-track {
 }
 
 /* Mobile Responsive Fixes */
-@media (max-width: 768px) {
+@media (max-width: 1100px) {
     .navbar {
         height: auto;
+        min-height: 0;
         padding: 10px 0;
         position: fixed; /* Ensure it stays fixed */
     }
@@ -1580,6 +1579,10 @@ input[type=range]::-moz-range-track {
         padding-bottom: 40px;
         align-items: flex-start; /* Reset alignment */
         min-height: auto; /* Remove full height on mobile */
+    }
+
+    .hero {
+        margin-top: 105px;
     }
 
     .simulation-container {
@@ -1770,4 +1773,3 @@ input[type=range]::-moz-range-track {
     padding: 0;
     border: none;
 }
-

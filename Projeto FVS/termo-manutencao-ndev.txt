@@ -1,0 +1,35 @@
+TERMO DE MANUTENÇÃO - NDev Studio
+Cliente: Victor
+CPF/CNPJ: 03982283108
+Email: victor.vallim@gmail.com
+Plano: Completo (R$ 120/mês)
+Aceite: SIM
+Data: 23/03/2026, 21:40:52
+Partes
+Prestador: NDev Studio.
+Cliente: conforme preenchimento abaixo.
+
+Objeto
+Manutenção mensal do site, incluindo hospedagem/monitoramento e suporte, de acordo com o plano escolhido.
+
+O que está incluso
+- Correções de funcionamento e ajustes técnicos necessários para manter o site no ar.
+- Atualizações de conteúdo de baixo risco (texto, botões, imagens) conforme o plano.
+- Suporte via WhatsApp em horário comercial.
+
+O que não está incluso
+- Mudança completa de layout, criação de novas páginas grandes, e funcionalidades customizadas (orçado à parte).
+- Produção de fotos, vídeos e artes (orçado à parte).
+- Serviços que dependam de terceiros com custo próprio (domínio, e-mails, APIs pagas).
+
+Regras de uso
+O cliente se compromete a não utilizar o site para fins ilícitos (fraudes, phishing, malware, pirâmides). Em caso de suspeita ou confirmação, a manutenção pode ser suspensa imediatamente.
+
+Pagamento
+Mensalidade recorrente conforme o plano. Vencimento mensal. Cancelamento a qualquer momento, com aviso prévio de 7 dias.
+
+Responsabilidades
+O prestador não se responsabiliza por instabilidades/indisponibilidades causadas por provedores terceiros, mas atuará para mitigar e restaurar o serviço quando possível.
+
+Aceite
+Ao assinar e enviar este termo, o cliente declara ciência e concordância com as condições.
