@@ -27,6 +27,16 @@ export async function handler(event) {
   const installment = String(input.installment ?? "").trim();
   const pageUrl = String(input.page_url ?? "").trim();
   const source = String(input.source ?? "").trim();
+  const referrer = String(input.referrer ?? "").trim();
+  const utmSource = String(input.utm_source ?? "").trim();
+  const utmMedium = String(input.utm_medium ?? "").trim();
+  const utmCampaign = String(input.utm_campaign ?? "").trim();
+  const utmTerm = String(input.utm_term ?? "").trim();
+  const utmContent = String(input.utm_content ?? "").trim();
+  const utmReferrer = String(input.utm_referrer ?? "").trim();
+  const gclientid = String(input.gclientid ?? "").trim();
+  const gclid = String(input.gclid ?? "").trim();
+  const fbclid = String(input.fbclid ?? "").trim();
 
   if (!name || !phone || !objective || !creditValue || !months) {
     return json(422, { ok: false, error: "missing_required_fields" });
@@ -61,6 +71,73 @@ export async function handler(event) {
       contacts: [{ name, custom_fields_values: contactCustomFields }],
     },
   };
+
+  const leadCustomFields = [];
+  const objectiveFieldId = parseOptionalInt(process.env.KOMMO_LEAD_CF_OBJECTIVE_ID);
+  const creditValueFieldId = parseOptionalInt(process.env.KOMMO_LEAD_CF_CREDIT_VALUE_ID);
+  const monthsFieldId = parseOptionalInt(process.env.KOMMO_LEAD_CF_MONTHS_ID);
+  const installmentFieldId = parseOptionalInt(process.env.KOMMO_LEAD_CF_INSTALLMENT_ID);
+  const cepFieldId = parseOptionalInt(process.env.KOMMO_LEAD_CF_CEP_ID);
+  const utmContentFieldId = parseOptionalInt(process.env.KOMMO_LEAD_CF_UTM_CONTENT_ID);
+  const utmMediumFieldId = parseOptionalInt(process.env.KOMMO_LEAD_CF_UTM_MEDIUM_ID);
+  const utmCampaignFieldId = parseOptionalInt(process.env.KOMMO_LEAD_CF_UTM_CAMPAIGN_ID);
+  const utmSourceFieldId = parseOptionalInt(process.env.KOMMO_LEAD_CF_UTM_SOURCE_ID);
+  const utmTermFieldId = parseOptionalInt(process.env.KOMMO_LEAD_CF_UTM_TERM_ID);
+  const utmReferrerFieldId = parseOptionalInt(process.env.KOMMO_LEAD_CF_UTM_REFERRER_ID);
+  const referrerFieldId = parseOptionalInt(process.env.KOMMO_LEAD_CF_REFERRER_ID);
+  const gclientidFieldId = parseOptionalInt(process.env.KOMMO_LEAD_CF_GCLIENTID_ID);
+  const gclidFieldId = parseOptionalInt(process.env.KOMMO_LEAD_CF_GCLID_ID);
+  const fbclidFieldId = parseOptionalInt(process.env.KOMMO_LEAD_CF_FBCLID_ID);
+
+  if (objectiveFieldId !== null && objective) {
+    leadCustomFields.push({ field_id: objectiveFieldId, values: [{ value: objective }] });
+  }
+  if (creditValueFieldId !== null && creditValue) {
+    leadCustomFields.push({ field_id: creditValueFieldId, values: [{ value: creditValue }] });
+  }
+  if (monthsFieldId !== null && months) {
+    leadCustomFields.push({ field_id: monthsFieldId, values: [{ value: Number(months) || months }] });
+  }
+  if (installmentFieldId !== null && installment) {
+    leadCustomFields.push({ field_id: installmentFieldId, values: [{ value: installment }] });
+  }
+  if (cepFieldId !== null && cep) {
+    leadCustomFields.push({ field_id: cepFieldId, values: [{ value: cep }] });
+  }
+  if (utmContentFieldId !== null && utmContent) {
+    leadCustomFields.push({ field_id: utmContentFieldId, values: [{ value: utmContent }] });
+  }
+  if (utmMediumFieldId !== null && utmMedium) {
+    leadCustomFields.push({ field_id: utmMediumFieldId, values: [{ value: utmMedium }] });
+  }
+  if (utmCampaignFieldId !== null && utmCampaign) {
+    leadCustomFields.push({ field_id: utmCampaignFieldId, values: [{ value: utmCampaign }] });
+  }
+  if (utmSourceFieldId !== null && utmSource) {
+    leadCustomFields.push({ field_id: utmSourceFieldId, values: [{ value: utmSource }] });
+  }
+  if (utmTermFieldId !== null && utmTerm) {
+    leadCustomFields.push({ field_id: utmTermFieldId, values: [{ value: utmTerm }] });
+  }
+  if (utmReferrerFieldId !== null && utmReferrer) {
+    leadCustomFields.push({ field_id: utmReferrerFieldId, values: [{ value: utmReferrer }] });
+  }
+  if (referrerFieldId !== null && referrer) {
+    leadCustomFields.push({ field_id: referrerFieldId, values: [{ value: referrer }] });
+  }
+  if (gclientidFieldId !== null && gclientid) {
+    leadCustomFields.push({ field_id: gclientidFieldId, values: [{ value: gclientid }] });
+  }
+  if (gclidFieldId !== null && gclid) {
+    leadCustomFields.push({ field_id: gclidFieldId, values: [{ value: gclid }] });
+  }
+  if (fbclidFieldId !== null && fbclid) {
+    leadCustomFields.push({ field_id: fbclidFieldId, values: [{ value: fbclid }] });
+  }
+
+  if (leadCustomFields.length > 0) {
+    lead.custom_fields_values = leadCustomFields;
+  }
 
   if (pipelineId !== null) lead.pipeline_id = pipelineId;
   if (statusId !== null) lead.status_id = statusId;

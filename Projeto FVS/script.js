@@ -931,7 +931,7 @@ async function createKommoLeadFromSimulation(payload) {
 }
 
 // Função de envio da simulação via WhatsApp
-function sendSimulation() {
+async function sendSimulation() {
     // Coleta dados dos campos
     const name = document.getElementById('client-name').value;
     const phone = document.getElementById('client-phone').value;
@@ -992,7 +992,13 @@ function sendSimulation() {
         term_months: Number(months)
     });
 
-    createKommoLeadFromSimulation({
+    const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search || '') : null;
+    const getParam = (key) => {
+        if (!urlParams) return '';
+        return String(urlParams.get(key) || '').trim();
+    };
+
+    const kommoResult = await createKommoLeadFromSimulation({
         source: 'site_simulacao',
         name,
         phone,
@@ -1002,18 +1008,36 @@ function sendSimulation() {
         credit_value: formattedValue,
         months,
         installment: installmentValue,
-        page_url: typeof window !== 'undefined' ? window.location.href : ''
-    }).then((result) => {
-        if (result.ok) {
-            trackMarketingEvent('kommo_lead_created', { lead_id: result.leadId });
-            showToast('Recebemos sua simulação. Em instantes entraremos em contato.', 'success');
-        } else {
-            trackMarketingEvent('kommo_lead_failed', { status: Number(result.status || 0) });
-        }
+        page_url: typeof window !== 'undefined' ? window.location.href : '',
+        referrer: typeof window !== 'undefined' ? (document.referrer || '') : '',
+        utm_source: getParam('utm_source'),
+        utm_medium: getParam('utm_medium'),
+        utm_campaign: getParam('utm_campaign'),
+        utm_term: getParam('utm_term'),
+        utm_content: getParam('utm_content'),
+        utm_referrer: getParam('utm_referrer'),
+        gclid: getParam('gclid'),
+        fbclid: getParam('fbclid'),
+        gclientid: getParam('gclientid')
     });
+
+    if (kommoResult.ok) {
+        trackMarketingEvent('kommo_lead_created', { lead_id: kommoResult.leadId });
+        showToast('Recebemos sua simulação. Em instantes entraremos em contato.', 'success');
+    } else {
+        trackMarketingEvent('kommo_lead_failed', { status: Number(kommoResult.status || 0) });
+    }
+
+    const leadReference = kommoResult.ok && kommoResult.leadId ? ` (Ref.: ${kommoResult.leadId})` : '';
+    const whatsappMessage =
+        `Olá! Sou ${name} e fiz uma simulação no seu site${leadReference}.%0A` +
+        `Tenho interesse em saber mais sobre consórcio.%0A` +
+        `Objetivo: ${type}%0A` +
+        `Crédito: ${formattedValue}%0A` +
+        `Prazo: ${months} meses`;
     
     // Abre WhatsApp
-    const whatsappUrl = `https://wa.me/5561996667218?text=${message}`;
+    const whatsappUrl = `https://wa.me/5561996667218?text=${whatsappMessage}`;
     window.open(whatsappUrl, '_blank');
 }
 
