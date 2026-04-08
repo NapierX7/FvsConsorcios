@@ -92,8 +92,8 @@
                             <i class="fas fa-bullseye"></i>
                             <select id="type" onchange="updateSimulationOptions()">
                                 <option value="" disabled selected>Selecione uma opção...</option>
-                                <option value="Imóvel">Imóvel (Aquisição, Construção ou Investimento)</option>
-                                <option value="Veículo">Automóvel (Renovação de Frota ou Uso Pessoal)</option>
+                                <option value="Imóvel">Imóvel</option>
+                                <option value="Veículo">Automóvel</option>
                                 <option value="Motocicleta">Motocicleta</option>
                                 <option value="Pesados">Veículos Pesados (Caminhões, Máquinas)</option>
                                 <option value="Serviços">Serviços (Reformas, Cirurgias, Projetos)</option>
@@ -104,12 +104,12 @@
                     <div class="form-group">
                         <label for="value-slider">Valor do Crédito</label>
                         <div class="range-wrapper">
-                            <input type="range" id="value-slider" min="50000" max="1500000" step="10000" value="50000" oninput="syncValueInput(this.value)">
+                            <input type="range" id="value-slider" min="45000" max="1200000" step="5000" value="120000" oninput="syncValueInput(this.value)">
                             <div class="value-display-wrapper">
                                 <span class="currency-prefix">R$</span>
-                                <input type="text" id="value-text" class="value-text-input" value="50.000,00" onchange="syncSliderInput(this.value)">
+                                <input type="text" id="value-text" class="value-text-input" value="120.000,00" onchange="syncSliderInput(this.value)">
                             </div>
-                            <div class="range-value-display" id="value-output" style="display:none;">R$ 50.000,00</div>
+                            <div class="range-value-display" id="value-output" style="display:none;">R$ 120.000,00</div>
                         </div>
                     </div>
 
@@ -127,9 +127,32 @@
                 <div id="simulation-result" class="simulation-result" style="display: none;">
                     <h3>Resultado da Simulação</h3>
                     <div class="result-card">
-                        <p>Valor do Crédito: <strong id="result-credit">R$ 0,00</strong></p>
-                        <p>Prazo: <strong id="result-term">0 meses</strong></p>
-                        <p>Parcela Estimada: <strong id="monthly-payment">R$ 0,00</strong></p>
+                        <div class="result-row">
+                            <span class="result-label">Valor do Crédito</span>
+                            <strong id="result-credit">R$ 0,00</strong>
+                        </div>
+                        <div class="result-row">
+                            <span class="result-label">Prazo</span>
+                            <strong id="result-term">0 meses</strong>
+                        </div>
+                        <div class="result-row result-row-payment">
+                            <span class="result-label">Parcelas</span>
+                            <div id="monthly-payment" class="payment-details">R$ 0,00</div>
+                        </div>
+                        <div id="result-fees" style="display: none;">
+                            <div class="result-row">
+                                <span class="result-label">Taxa administrativa</span>
+                                <strong id="result-admin-fee">-</strong>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">Fundo reserva</span>
+                                <strong id="result-reserve-fee">-</strong>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">Taxa antecipada</span>
+                                <strong id="result-upfront-fee">-</strong>
+                            </div>
+                        </div>
                         <p class="result-note">*Valores aproximados sujeitos a alteração.</p>
                     </div>
                     <button type="button" class="btn-primary" onclick="sendSimulation()">

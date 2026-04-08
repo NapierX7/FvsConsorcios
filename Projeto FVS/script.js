@@ -357,15 +357,29 @@ document.addEventListener('DOMContentLoaded', () => {
 // Simulation Logic - Configurable Calculation Model
 const consorcioTypes = {
     'Imóvel': {
-        terms: [36, 50, 60, 70, 85, 100, 120, 135, 150, 240], // Updated with user specific terms
-        defaultTerm: 240,
-        min: 50000,
+        terms: [36, 50, 60, 70, 85, 100, 120, 135, 150, 200, 220, 240],
+        defaultTerm: 100,
+        min: 120000,
         max: 1200000,
         // Configuração de Prazos Dinâmicos
         dynamicTerms: [
-            // Exemplo: Se valor <= 100k, apenas prazos até 100 meses (exemplo hipotético)
-            // { maxCredit: 100000, allowedTerms: [36, 50, 60, 70, 85, 100] }
+            { maxCredit: 599999, allowedTerms: [36, 50, 60, 70, 85, 100, 120, 135, 150] },
+            { maxCredit: 1200000, allowedTerms: [36, 50, 60, 70, 85, 100, 120, 135, 150, 200, 220, 240] }
         ],
+        termFees: {
+            36: { adminMonthlyRate: 0.0036, reserveTotalRate: 0.02, upfrontTotalRate: 0.02 },
+            50: { adminMonthlyRate: 0.0026, reserveTotalRate: 0.02, upfrontTotalRate: 0.02 },
+            60: { adminMonthlyRate: 0.0022, reserveTotalRate: 0.02, upfrontTotalRate: 0.02 },
+            70: { adminMonthlyRate: 0.0019, reserveTotalRate: 0.02, upfrontTotalRate: 0.02 },
+            85: { adminMonthlyRate: 0.0015, reserveTotalRate: 0.02, upfrontTotalRate: 0.02 },
+            100: { adminMonthlyRate: 0.0013, reserveTotalRate: 0.02, upfrontTotalRate: 0.02 },
+            120: { adminMonthlyRate: 0.0012, reserveTotalRate: 0.02, upfrontTotalRate: 0.02 },
+            135: { adminMonthlyRate: 0.0011, reserveTotalRate: 0.02, upfrontTotalRate: 0.02 },
+            150: { adminMonthlyRate: 0.0011, reserveTotalRate: 0.02, upfrontTotalRate: 0.02 },
+            200: { adminMonthlyRate: 0.001, reserveTotalRate: 0.02, upfrontTotalRate: 0.012 },
+            220: { adminMonthlyRate: 0.001, reserveTotalRate: 0.02, upfrontTotalRate: 0.012 },
+            240: { adminMonthlyRate: 0.001, reserveTotalRate: 0.02, upfrontTotalRate: 0.012 }
+        },
         strategies: [
             // Exact Strategies based on User Provided Data
             {
@@ -415,7 +429,7 @@ const consorcioTypes = {
             },
             {
                 maxMonths: 100,
-                factor: 0.96637, // 1.159,64 / 1.200,00
+                factor: 0.89500,
                 firstInstallmentsRule: {
                     enabled: true,
                     count: 2,
@@ -460,22 +474,16 @@ const consorcioTypes = {
                 }
             }
         ],
-        adminRate: 0.001, // 0.1% per month
+        adminRate: 0.0013,
         reserveFundRate: 0.02, // 2% total
         insurance: 0 // Handled in factor
     },
     'Veículo': {
         terms: [36, 50, 60, 90, 100],
-        defaultTerm: 90,
-        min: 30000,
+        defaultTerm: 60,
+        min: 45000,
         max: 180000,
-        dynamicTerms: [
-            // Regra: Créditos até 80k -> Apenas até 60 meses
-            { 
-                maxCredit: 80000, 
-                allowedTerms: [36, 50, 60] 
-            }
-        ],
+        dynamicTerms: [],
         strategies: [
             // Short/Medium Term (2 installmnets upfront)
             {
@@ -767,6 +775,10 @@ function calculateSimulation() {
     const paymentSpan = document.getElementById('monthly-payment');
     const resultCredit = document.getElementById('result-credit');
     const resultTerm = document.getElementById('result-term');
+    const feesContainer = document.getElementById('result-fees');
+    const adminFeeEl = document.getElementById('result-admin-fee');
+    const reserveFeeEl = document.getElementById('result-reserve-fee');
+    const upfrontFeeEl = document.getElementById('result-upfront-fee');
 
     if (type && value && months) {
         if (typeof window !== 'undefined') {
@@ -784,6 +796,23 @@ function calculateSimulation() {
         // Update summary fields
         if (resultCredit) resultCredit.textContent = `R$ ${formatter.format(value)}`;
         if (resultTerm) resultTerm.textContent = `${months} meses`;
+
+        if (feesContainer) {
+            if (type === 'Imóvel' && config.termFees && config.termFees[months]) {
+                const fees = config.termFees[months];
+                const formatPct = (valuePct) => valuePct.toFixed(2).replace(/\.?0+$/, '').replace('.', ',');
+                const adminPct = formatPct(fees.adminMonthlyRate * 100);
+                const reservePct = formatPct(fees.reserveTotalRate * 100);
+                const upfrontPct = formatPct(fees.upfrontTotalRate * 100);
+
+                if (adminFeeEl) adminFeeEl.textContent = `${adminPct}% ao mês`;
+                if (reserveFeeEl) reserveFeeEl.textContent = `${reservePct}%`;
+                if (upfrontFeeEl) upfrontFeeEl.textContent = `${upfrontPct}%`;
+                feesContainer.style.display = 'block';
+            } else {
+                feesContainer.style.display = 'none';
+            }
+        }
         
         // Find matching strategy
         let strategy = null;
@@ -809,25 +838,28 @@ function calculateSimulation() {
             const addonAmount = value * rule.addonRate;
             const firstInstallmentValue = baseInstallment + addonAmount;
 
-            // Display: First Installment(s) (Top) + Standard Installment (Main)
-            // Use plural if count > 1
-            const countLabel = rule.count > 1 ? `1ª a ${rule.count}ª parcela` : '1ª parcela';
+            const countLabel =
+                rule.count === 2
+                    ? '1ª e 2ª parcela'
+                    : rule.count > 1
+                        ? `1ª a ${rule.count}ª parcela`
+                        : '1ª parcela';
 
             paymentSpan.innerHTML = `
-                <div style="font-size: 0.5em; line-height: 1.2; margin-bottom: 5px; opacity: 0.9;">
-                    ${countLabel}: R$ ${formatter.format(firstInstallmentValue)}
+                <div class="payment-row">
+                    <span class="payment-label">${countLabel}</span>
+                    <strong class="payment-value">R$ ${formatter.format(firstInstallmentValue)}</strong>
                 </div>
-                R$ ${formatter.format(baseInstallment)}
-                <div style="font-size: 0.35em; line-height: 1.2; margin-top: 5px; opacity: 0.8; font-weight: normal;">
-                    (demais parcelas reduzidas até a contemplação)
+                <div class="payment-row">
+                    <span class="payment-label">Demais parcelas</span>
+                    <strong class="payment-value">R$ ${formatter.format(baseInstallment)}</strong>
                 </div>
             `;
         } else {
-            // Standard display
             paymentSpan.innerHTML = `
-                R$ ${formatter.format(baseInstallment)}
-                <div style="font-size: 0.35em; line-height: 1.2; margin-top: 5px; opacity: 0.8; font-weight: normal;">
-                    (parcela reduzida até a contemplação)
+                <div class="payment-row">
+                    <span class="payment-label">Parcela</span>
+                    <strong class="payment-value">R$ ${formatter.format(baseInstallment)}</strong>
                 </div>
             `;
         }
@@ -921,6 +953,23 @@ function sendSimulation() {
     // Captura o texto da parcela (pode conter HTML, então pegamos innerText limpo)
     const installmentElement = document.getElementById('monthly-payment');
     let installmentValue = installmentElement ? installmentElement.innerText.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim() : 'N/A';
+
+    const numericMonths = Number(months);
+    const feesConfig = consorcioTypes[type];
+    const termFees = feesConfig && feesConfig.termFees ? feesConfig.termFees[numericMonths] : null;
+    const feeLines = termFees
+        ? (() => {
+            const formatPct = (valuePct) => valuePct.toFixed(2).replace(/\.?0+$/, '').replace('.', ',');
+            const adminPct = formatPct(termFees.adminMonthlyRate * 100);
+            const reservePct = formatPct(termFees.reserveTotalRate * 100);
+            const upfrontPct = formatPct(termFees.upfrontTotalRate * 100);
+            return (
+                `*Taxa administrativa:* ${adminPct}% ao mês%0A` +
+                `*Fundo reserva:* ${reservePct}%0A` +
+                `*Taxa antecipada:* ${upfrontPct}%0A`
+            );
+        })()
+        : '';
     
     // Monta a mensagem
     const message = `*Nova Simulação de Consórcio (Via Site)*%0A%0A` +
@@ -933,6 +982,7 @@ function sendSimulation() {
                     `*Crédito Desejado:* ${formattedValue}%0A` +
                     `*Prazo:* ${months} meses%0A` +
                     `*Parcela Estimada:* ${installmentValue}%0A` +
+                    (feeLines ? `--------------------------------%0A${feeLines}` : '') +
                     `--------------------------------%0A` +
                     `*Gostaria de uma análise de crédito detalhada.*`;
 
