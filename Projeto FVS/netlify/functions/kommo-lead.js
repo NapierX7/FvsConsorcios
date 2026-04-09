@@ -61,6 +61,35 @@ export async function handler(event) {
     });
   }
 
+  const contactObjectiveFieldId = parseOptionalInt(process.env.KOMMO_CONTACT_CF_OBJECTIVE_ID);
+  const contactCreditValueFieldId = parseOptionalInt(process.env.KOMMO_CONTACT_CF_CREDIT_VALUE_ID);
+  const contactMonthsFieldId = parseOptionalInt(process.env.KOMMO_CONTACT_CF_MONTHS_ID);
+  const contactInstallmentFieldId = parseOptionalInt(process.env.KOMMO_CONTACT_CF_INSTALLMENT_ID);
+  const contactCepFieldId = parseOptionalInt(process.env.KOMMO_CONTACT_CF_CEP_ID);
+  const contactTermsFieldId = parseOptionalInt(process.env.KOMMO_CONTACT_CF_TERMS_ID);
+
+  if (contactObjectiveFieldId !== null && objective) {
+    contactCustomFields.push({ field_id: contactObjectiveFieldId, values: [{ value: objective }] });
+  }
+  if (contactCreditValueFieldId !== null && creditValue) {
+    contactCustomFields.push({ field_id: contactCreditValueFieldId, values: [{ value: creditValue }] });
+  }
+  if (contactMonthsFieldId !== null && months) {
+    contactCustomFields.push({ field_id: contactMonthsFieldId, values: [{ value: Number(months) || months }] });
+  }
+  if (contactInstallmentFieldId !== null && installment) {
+    contactCustomFields.push({ field_id: contactInstallmentFieldId, values: [{ value: installment }] });
+  }
+  if (contactCepFieldId !== null && cep) {
+    contactCustomFields.push({ field_id: contactCepFieldId, values: [{ value: cep }] });
+  }
+  if (contactTermsFieldId !== null) {
+    const terms = input.terms ?? input.user_terms ?? null;
+    if (terms !== null && terms !== undefined && String(terms).trim() !== "") {
+      contactCustomFields.push({ field_id: contactTermsFieldId, values: [{ value: String(terms).trim() }] });
+    }
+  }
+
   const lead = {
     name: leadName,
     metadata: {
@@ -88,6 +117,12 @@ export async function handler(event) {
   const gclientidFieldId = parseOptionalInt(process.env.KOMMO_LEAD_CF_GCLIENTID_ID);
   const gclidFieldId = parseOptionalInt(process.env.KOMMO_LEAD_CF_GCLID_ID);
   const fbclidFieldId = parseOptionalInt(process.env.KOMMO_LEAD_CF_FBCLID_ID);
+
+  const wroteObjective = objectiveFieldId !== null && !!objective;
+  const wroteCreditValue = creditValueFieldId !== null && !!creditValue;
+  const wroteMonths = monthsFieldId !== null && !!months;
+  const wroteInstallment = installmentFieldId !== null && !!installment;
+  const wroteCep = cepFieldId !== null && !!cep;
 
   if (objectiveFieldId !== null && objective) {
     leadCustomFields.push({ field_id: objectiveFieldId, values: [{ value: objective }] });
@@ -176,30 +211,28 @@ export async function handler(event) {
     return json(502, { ok: false, error: "unexpected_kommo_response" });
   }
 
-  const noteLines = [];
-  noteLines.push("Nova simulação (site)");
-  noteLines.push(`Cliente: ${name}`);
-  noteLines.push(`WhatsApp: ${phone}`);
-  if (email) noteLines.push(`Email: ${email}`);
-  if (cep) noteLines.push(`CEP: ${cep}`);
-  noteLines.push(`Objetivo: ${objective}`);
-  noteLines.push(`Crédito desejado: ${creditValue}`);
-  noteLines.push(`Prazo: ${months} meses`);
-  if (installment) noteLines.push(`Parcela estimada: ${installment}`);
-  if (pageUrl) noteLines.push(`Página: ${pageUrl}`);
+  const noteDetails = [];
+  if (!wroteCep && cep) noteDetails.push(`CEP: ${cep}`);
+  if (!wroteObjective && objective) noteDetails.push(`Objetivo: ${objective}`);
+  if (!wroteCreditValue && creditValue) noteDetails.push(`Crédito desejado: ${creditValue}`);
+  if (!wroteMonths && months) noteDetails.push(`Prazo: ${months} meses`);
+  if (!wroteInstallment && installment) noteDetails.push(`Parcela estimada: ${installment}`);
+  if (pageUrl) noteDetails.push(`Página: ${pageUrl}`);
 
-  const noteUrl = `https://${subdomain}.kommo.com/api/v4/leads/${leadId}/notes`;
-  await fetch(noteUrl, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-    body: JSON.stringify([
-      { note_type: "common", params: { text: noteLines.join("\n") } },
-    ]),
-  }).catch(() => null);
+  if (noteDetails.length > 0) {
+    const noteUrl = `https://${subdomain}.kommo.com/api/v4/leads/${leadId}/notes`;
+    await fetch(noteUrl, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify([
+        { note_type: "common", params: { text: ["Nova simulação (site)", ...noteDetails].join("\n") } },
+      ]),
+    }).catch(() => null);
+  }
 
   return json(200, { ok: true, lead_id: leadId });
 }
