@@ -259,6 +259,232 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initClickTracking();
 
+    const contempladasEndpoint = 'https://contempladas.lanceconsorcio.com.br';
+
+    const parsePtBrMoney = (value) => {
+        const raw = String(value || '').trim();
+        if (!raw) return 0;
+        const normalized = raw.replace(/\./g, '').replace(',', '.').replace(/[^\d.]/g, '');
+        const num = Number(normalized);
+        return Number.isFinite(num) ? num : 0;
+    };
+
+    const digitsOnly = (value) => String(value || '').replace(/\D/g, '');
+
+    const formatPtBrInt = (value) => {
+        const digits = digitsOnly(value).replace(/^0+(?=\d)/, '');
+        if (!digits) return '';
+        return digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    };
+
+    const maskPtBrIntInput = (inputEl) => {
+        if (!inputEl) return;
+        const raw = String(inputEl.value || '');
+        const caret = typeof inputEl.selectionStart === 'number' ? inputEl.selectionStart : raw.length;
+        const leftRaw = raw.slice(0, caret);
+        const leftDigits = digitsOnly(leftRaw);
+        const allFormatted = formatPtBrInt(raw);
+        const leftFormatted = formatPtBrInt(leftDigits);
+        inputEl.value = allFormatted;
+        const nextCaret = leftFormatted.length;
+        try {
+            inputEl.setSelectionRange(nextCaret, nextCaret);
+        } catch {}
+    };
+
+    const isDisponivel = (item) => String(item?.reserva || '').toLowerCase().includes('dispon');
+
+    const buildCartaWhatsappUrl = (item) => {
+        const parts = [
+            'Olá! Vi uma carta contemplada no site da FVS e quero orientação.',
+            item?.categoria ? `Categoria: ${item.categoria}` : null,
+            item?.valor_credito ? `Crédito: R$ ${item.valor_credito}` : null,
+            item?.entrada ? `Entrada: R$ ${item.entrada}` : null,
+            item?.parcelas ? `Parcelas: ${item.parcelas}` : null,
+            item?.valor_parcela ? `Parcela: R$ ${item.valor_parcela}` : null,
+            item?.administradora ? `Administradora: ${item.administradora}` : null,
+            item?.reserva ? `Status: ${item.reserva}` : null
+        ].filter(Boolean);
+        return `https://wa.me/5561996667218?text=${encodeURIComponent(parts.join('\n'))}`;
+    };
+
+    const createCartaCard = (item) => {
+        const card = document.createElement('div');
+        card.className = 'contemplada-card';
+
+        const badgeText = String(item?.reserva || '').trim() || 'Status';
+        const badgeClass = isDisponivel(item) ? 'contemplada-badge is-available' : 'contemplada-badge';
+
+        card.innerHTML = `
+            <div class="contemplada-top">
+                <div class="contemplada-title">${String(item?.categoria || 'Carta').trim()}</div>
+                <div class="${badgeClass}">${badgeText}</div>
+            </div>
+            <div class="contemplada-meta">
+                <div>
+                    <span class="k">Crédito</span>
+                    <span class="v">R$ ${String(item?.valor_credito || '-').trim()}</span>
+                </div>
+                <div>
+                    <span class="k">Entrada</span>
+                    <span class="v">R$ ${String(item?.entrada || '-').trim()}</span>
+                </div>
+                <div>
+                    <span class="k">Parcelas</span>
+                    <span class="v">${String(item?.parcelas || '-').trim()}</span>
+                </div>
+                <div>
+                    <span class="k">Parcela</span>
+                    <span class="v">R$ ${String(item?.valor_parcela || '-').trim()}</span>
+                </div>
+                <div>
+                    <span class="k">Administradora</span>
+                    <span class="v">${String(item?.administradora || '-').trim()}</span>
+                </div>
+                <div>
+                    <span class="k">Reserva</span>
+                    <span class="v">${String(item?.reserva || '-').trim()}</span>
+                </div>
+            </div>
+            <div class="contemplada-actions">
+                <a class="btn-outline" href="${buildCartaWhatsappUrl(item)}" target="_blank" rel="noopener noreferrer">Quero essa carta</a>
+            </div>
+        `.trim();
+
+        return card;
+    };
+
+    const sortCartas = (items) => {
+        const copy = Array.isArray(items) ? [...items] : [];
+        copy.sort((a, b) => {
+            const ad = isDisponivel(a) ? 1 : 0;
+            const bd = isDisponivel(b) ? 1 : 0;
+            if (bd !== ad) return bd - ad;
+            return parsePtBrMoney(b?.valor_credito) - parsePtBrMoney(a?.valor_credito);
+        });
+        return copy;
+    };
+
+    const renderCartas = (gridEl, items, limit) => {
+        if (!gridEl) return;
+        gridEl.innerHTML = '';
+        const sliced = typeof limit === 'number' ? items.slice(0, limit) : items;
+        sliced.forEach(item => gridEl.appendChild(createCartaCard(item)));
+    };
+
+    const setHidden = (el, hidden) => {
+        if (!el) return;
+        if (hidden) el.setAttribute('hidden', '');
+        else el.removeAttribute('hidden');
+    };
+
+    const loadCartas = async () => {
+        const res = await fetch(contempladasEndpoint, { method: 'GET' });
+        if (!res.ok) return [];
+        const json = await res.json().catch(() => null);
+        return Array.isArray(json) ? json : [];
+    };
+
+    const initContempladasPreview = async () => {
+        const gridEl = document.getElementById('contempladas-preview-grid');
+        if (!gridEl) return;
+
+        const emptyEl = document.getElementById('contempladas-preview-empty');
+
+        const getPreviewLimit = () => (window.innerWidth <= 768 ? 4 : 8);
+        let lastLimit = getPreviewLimit();
+
+        const rerenderOnResize = (items) => {
+            let t = null;
+            window.addEventListener('resize', () => {
+                if (t) window.clearTimeout(t);
+                t = window.setTimeout(() => {
+                    const nextLimit = getPreviewLimit();
+                    if (nextLimit === lastLimit) return;
+                    lastLimit = nextLimit;
+                    renderCartas(gridEl, items, lastLimit);
+                }, 120);
+            });
+        };
+
+        try {
+            const items = sortCartas(await loadCartas());
+            if (!items.length) {
+                setHidden(emptyEl, false);
+                return;
+            }
+            setHidden(emptyEl, true);
+            renderCartas(gridEl, items, lastLimit);
+            rerenderOnResize(items);
+        } catch {
+            setHidden(emptyEl, false);
+        }
+    };
+
+    const initContempladasPage = async () => {
+        const gridEl = document.getElementById('contempladas-page-grid');
+        if (!gridEl) return;
+
+        const emptyEl = document.getElementById('contempladas-page-empty');
+        const categoriaEl = document.getElementById('contempladas-filter-categoria');
+        const disponivelEl = document.getElementById('contempladas-filter-disponivel');
+        const creditoMaxEl = document.getElementById('contempladas-filter-credito-max');
+        const parcelaMaxEl = document.getElementById('contempladas-filter-parcela-max');
+        const countEl = document.getElementById('contempladas-count');
+
+        try {
+            const raw = sortCartas(await loadCartas());
+            if (!raw.length) {
+                setHidden(emptyEl, false);
+                return;
+            }
+            setHidden(emptyEl, true);
+
+            const categories = Array.from(new Set(raw.map(i => String(i?.categoria || '').trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+            if (categoriaEl) {
+                categories.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c;
+                    opt.textContent = c;
+                    categoriaEl.appendChild(opt);
+                });
+            }
+
+            const apply = () => {
+                const categoria = String(categoriaEl?.value || '').trim();
+                const onlyAvailable = Boolean(disponivelEl?.checked);
+                const creditoMax = parsePtBrMoney(creditoMaxEl?.value || '');
+                const parcelaMax = parsePtBrMoney(parcelaMaxEl?.value || '');
+                const filtered = raw.filter(item => {
+                    if (categoria && String(item?.categoria || '').trim() !== categoria) return false;
+                    if (onlyAvailable && !isDisponivel(item)) return false;
+                    if (creditoMax > 0 && parsePtBrMoney(item?.valor_credito) > creditoMax) return false;
+                    if (parcelaMax > 0 && parsePtBrMoney(item?.valor_parcela) > parcelaMax) return false;
+                    return true;
+                });
+                renderCartas(gridEl, filtered);
+                if (countEl) countEl.textContent = `${filtered.length} cartas`;
+            };
+
+            if (categoriaEl) categoriaEl.addEventListener('change', apply);
+            if (disponivelEl) disponivelEl.addEventListener('change', apply);
+            if (creditoMaxEl) creditoMaxEl.addEventListener('input', () => {
+                maskPtBrIntInput(creditoMaxEl);
+                apply();
+            });
+            if (parcelaMaxEl) parcelaMaxEl.addEventListener('input', () => {
+                maskPtBrIntInput(parcelaMaxEl);
+                apply();
+            });
+            apply();
+        } catch {
+            setHidden(emptyEl, false);
+        }
+    };
+
+    initContempladasPreview();
+    initContempladasPage();
+
     // Testimonials Slider Logic
     const slider = document.querySelector('.testimonials-slider');
     const paginationContainer = document.querySelector('.slider-pagination');

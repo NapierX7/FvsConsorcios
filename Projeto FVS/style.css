@@ -277,6 +277,86 @@ a {
     margin-left: 30px;
 }
 
+@media (max-width: 1580px) and (min-width: 1351px) {
+    .logo img {
+        max-width: 300px;
+        height: 156px;
+    }
+
+    .nav-menu ul {
+        gap: 22px;
+    }
+
+    .desktop-btn {
+        margin-left: 18px;
+    }
+}
+
+@media (max-width: 1350px) {
+    .logo img {
+        max-width: 280px;
+        height: 150px;
+    }
+
+    .nav-menu ul {
+        gap: 18px;
+    }
+
+    .desktop-btn {
+        margin-left: 16px;
+    }
+}
+
+@media (max-width: 1250px) {
+    .logo img {
+        max-width: 250px;
+        height: 140px;
+    }
+
+    .nav-menu a {
+        font-size: 0.82rem;
+    }
+
+    .nav-menu ul {
+        gap: 14px;
+    }
+
+    .navbar .btn-outline {
+        font-size: 0.78rem;
+    }
+
+    .btn-outline {
+        padding: 10px 16px;
+    }
+
+    .desktop-btn {
+        margin-left: 12px;
+    }
+}
+
+@media (max-width: 1220px) and (min-width: 1101px) {
+    .logo img {
+        max-width: 220px;
+        height: 128px;
+    }
+
+    .nav-menu ul {
+        gap: 10px;
+    }
+
+    .nav-menu a {
+        font-size: 0.78rem;
+    }
+
+    .btn-outline {
+        padding: 9px 12px;
+    }
+
+    .desktop-btn {
+        margin-left: 8px;
+    }
+}
+
 /* Hero Section */
 .hero {
     height: calc(100vh - 120px);
@@ -473,6 +553,215 @@ a.partner-card:hover img {
 .service-card p {
     font-size: 0.9rem;
     opacity: 0.9;
+}
+
+/* Cartas Contempladas */
+.contempladas-preview {
+    padding: 64px 0;
+    background: var(--white);
+}
+
+.contempladas-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+.contempladas-preview h2,
+.contempladas-page h1 {
+    color: var(--primary-color);
+}
+
+.contempladas-preview p {
+    color: #555;
+    font-size: 1.02rem;
+    margin-top: 8px;
+}
+
+.contempladas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 18px;
+}
+
+.contemplada-card {
+    background: var(--white);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.contemplada-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.contemplada-title {
+    font-weight: 700;
+    color: var(--text-color);
+    font-size: 1.05rem;
+}
+
+.contemplada-badge {
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: #f6f6f6;
+}
+
+.contemplada-badge.is-available {
+    background: rgba(46, 160, 67, 0.12);
+    border-color: rgba(46, 160, 67, 0.28);
+    color: #1f7a33;
+}
+
+.contemplada-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 14px;
+}
+
+.contemplada-meta .k {
+    font-size: 0.78rem;
+    color: #666;
+    display: block;
+}
+
+.contemplada-meta .v {
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+.contemplada-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 4px;
+}
+
+.contemplada-actions a {
+    flex: 1;
+    text-align: center;
+}
+
+.contempladas-empty {
+    margin-top: 18px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: rgba(122, 30, 30, 0.06);
+    border: 1px solid rgba(122, 30, 30, 0.12);
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.contempladas-page {
+    margin-top: 120px;
+}
+
+.contempladas-page-hero {
+    padding: 48px 0 18px;
+    background: linear-gradient(180deg, rgba(122, 30, 30, 0.08), rgba(255, 255, 255, 0));
+    text-align: center;
+}
+
+.contempladas-page-hero h1 {
+    font-size: 2.4rem;
+    margin-bottom: 10px;
+}
+
+.contempladas-page-hero p {
+    color: #555;
+    font-size: 1.05rem;
+}
+
+.contempladas-page-body {
+    padding: 18px 0 64px;
+}
+
+.contempladas-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 14px 18px;
+    margin-bottom: 18px;
+}
+
+.contempladas-filters .filter {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 220px;
+}
+
+.contempladas-filters label {
+    font-weight: 700;
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+
+.contempladas-filters select {
+    padding: 12px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    font-family: inherit;
+    background: var(--white);
+}
+
+.contempladas-filters input {
+    padding: 12px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    font-family: inherit;
+    background: var(--white);
+}
+
+.contempladas-filters input::placeholder {
+    color: rgba(51, 51, 51, 0.55);
+}
+
+.filter-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    color: var(--text-color);
+    font-size: 0.9rem;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    background: var(--white);
+}
+
+.filter-check input {
+    width: 18px;
+    height: 18px;
+}
+
+.contempladas-count {
+    font-weight: 700;
+    color: #555;
+    margin-left: auto;
+}
+
+@media (max-width: 768px) {
+    .contempladas-head {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .contempladas-count {
+        margin-left: 0;
+    }
 }
 
 /* Benefits Section */
