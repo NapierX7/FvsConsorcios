@@ -294,6 +294,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const isDisponivel = (item) => String(item?.reserva || '').toLowerCase().includes('dispon');
 
+    const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (ch) => {
+        switch (ch) {
+            case '&': return '&amp;';
+            case '<': return '&lt;';
+            case '>': return '&gt;';
+            case '"': return '&quot;';
+            case "'": return '&#39;';
+            default: return ch;
+        }
+    });
+
+    const buildAdministradoraValue = (administradora) => {
+        const raw = String(administradora ?? '').trim();
+        if (!raw) return '-';
+
+        const isHs = /\bhs\b/i.test(raw);
+        if (!isHs) return escapeHtml(raw);
+
+        return `<img class="admin-logo" src="imagens/logo hs.png" alt="HS Consórcios" loading="lazy">`;
+    };
+
     const buildCartaWhatsappUrl = (item) => {
         const parts = [
             'Olá! Vi uma carta contemplada no site da FVS e quero orientação.',
@@ -337,9 +358,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="k">Parcela</span>
                     <span class="v">R$ ${String(item?.valor_parcela || '-').trim()}</span>
                 </div>
-                <div>
+                <div class="contemplada-meta-item is-admin">
                     <span class="k">Administradora</span>
-                    <span class="v">${String(item?.administradora || '-').trim()}</span>
+                    <span class="v">${buildAdministradoraValue(item?.administradora)}</span>
                 </div>
                 <div>
                     <span class="k">Reserva</span>

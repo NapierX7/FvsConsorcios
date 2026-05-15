@@ -631,6 +631,14 @@ a.partner-card:hover img {
     gap: 10px 14px;
 }
 
+.contemplada-meta > div {
+    min-width: 0;
+}
+
+.contemplada-meta .contemplada-meta-item.is-admin {
+    grid-column: 1 / -1;
+}
+
 .contemplada-meta .k {
     font-size: 0.78rem;
     color: #666;
@@ -640,6 +648,16 @@ a.partner-card:hover img {
 .contemplada-meta .v {
     font-weight: 700;
     color: var(--text-color);
+}
+
+.contemplada-meta .v .admin-logo {
+    display: block;
+    width: 238px;
+    height: 58px;
+    border: 0;
+    overflow: hidden;
+    pointer-events: none;
+    object-fit: contain;
 }
 
 .contemplada-actions {
