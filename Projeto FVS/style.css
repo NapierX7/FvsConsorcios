@@ -1122,6 +1122,41 @@ footer {
     width: 20px; /* Fixed width for alignment */
 }
 
+.map-embed {
+    margin-top: 14px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.06);
+}
+
+.map-embed iframe {
+    width: 100%;
+    height: 140px;
+    border: 0;
+    display: block;
+}
+
+.location-map {
+    margin-top: 12px;
+}
+
+.map-link {
+    color: #ccc;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem;
+}
+
+.map-link i {
+    color: var(--secondary-color);
+}
+
+.map-link:hover {
+    color: var(--secondary-color);
+}
+
 .footer-copyright {
     border-top: 1px solid rgba(255,255,255,0.1);
     padding-top: 20px;
@@ -1137,6 +1172,22 @@ footer {
 
 .footer-copyright p {
     margin: 0;
+}
+
+.made-by {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: #888;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.made-by img {
+    height: 42px;
+    width: auto;
+    display: block;
+    opacity: 0.92;
 }
 
 /* Floating WhatsApp */
@@ -2018,6 +2069,10 @@ input[type=range]::-moz-range-track {
         z-index: 10;
         display: inline-block;
         padding: 5px 0;
+    }
+
+    .map-embed iframe {
+        height: 130px;
     }
 }
 
